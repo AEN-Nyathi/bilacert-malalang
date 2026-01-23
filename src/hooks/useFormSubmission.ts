@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 export interface FormSubmissionPayload {
 	formType: string; // 'contact', 'service-form', etc.
@@ -139,7 +139,7 @@ export function useFetchSubmission(submissionId: string | null) {
 	}, [submissionId]);
 
 	// Auto-fetch when submissionId changes
-	React.useEffect(() => {
+	useEffect(() => {
 		fetchSubmission();
 	}, [fetchSubmission]);
 
