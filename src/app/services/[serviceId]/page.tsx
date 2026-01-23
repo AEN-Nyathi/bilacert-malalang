@@ -98,7 +98,7 @@ export default function ServicePage({ params }: ServicePageProps) {
 				firstParagraph={safeService.whatIsSection.firstParagraph}
 				secondParagraph={safeService.whatIsSection.secondParagraph}
 				checkpoints={safeService.whatIsSection.checkpoints}
-				sideContent={safeService.whatIsSection.additionalContent === 'benefitsBox' ? 'benefitsBox' : safeService.whatIsSection.additionalContent === 'licenseTypes' ? 'licenseTypes' : undefined}
+				sideContent={safeService.whatIsSection.additionalContent === 'licenseTypes' ? 'licenseTypes' : undefined}
 				licenseTypes={safeService.licenseTypes}
 				benefits={safeService.benefitsBox}
 			/>
