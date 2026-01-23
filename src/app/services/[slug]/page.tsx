@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft, Check } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
-import ContactForm from '@/components/ContactForm';
+import ContactForm from '@/app/contact/ContactForm';
 
 interface Props {
 	params: {
