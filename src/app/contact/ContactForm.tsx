@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Phone, Mail, Clock, Send, CheckCircle, AlertCircle } from 'lucide-react';
-import { db } from '@/lib/firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { useFormSubmission } from '@/hooks/useFormSubmission';
 
 export default function ContactForm() {
 	const [formData, setFormData] = useState({
@@ -15,20 +14,21 @@ export default function ContactForm() {
 		message: '',
 	});
 
-	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+	const { isLoading, error, isSuccess, successMessage, handleSubmit, reset } =
+		useFormSubmission();
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const onSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setIsSubmitting(true);
-		setSubmitStatus('idle');
 
-		try {
-			await addDoc(collection(db, 'contacts'), {
-				...formData,
-				timestamp: new Date(),
-			});
-			setSubmitStatus('success');
+		const result = await handleSubmit({
+			formType: 'contact',
+			fullName: formData.name,
+			email: formData.email,
+			phone: formData.phone || undefined,
+			message: formData.message,
+		});
+
+		if (result?.success) {
 			setFormData({
 				name: '',
 				email: '',
@@ -36,11 +36,8 @@ export default function ContactForm() {
 				service: '',
 				message: '',
 			});
-		} catch (error) {
-			console.error('Error submitting form: ', error);
-			setSubmitStatus('error');
-		} finally {
-			setIsSubmitting(false);
+			// Auto-hide success message after 5 seconds
+			setTimeout(reset, 5000);
 		}
 	};
 
@@ -108,39 +105,32 @@ export default function ContactForm() {
 						</div>
 					</div>
 
-					{/* Contact Form */}
 					<div className='max-w-2xl mx-auto'>
 						<div className='bg-white p-8 rounded-xl shadow-sm'>
 							<h2 className='text-2xl font-bold text-primary mb-6 text-center'>
 								Send us a Message
 							</h2>
 
-							{submitStatus === 'success' && (
+							{isSuccess && successMessage && (
 								<div className='bg-green-50 border border-green-200 rounded-lg p-4 mb-6'>
 									<div className='flex items-center'>
 										<CheckCircle className='h-5 w-5 text-green-500 mr-2' />
-										<p className='text-green-700'>
-											Thank you! Your message has been sent successfully. We&apos;ll get back to you
-											within 24 hours.
-										</p>
+										<p className='text-green-700'>{successMessage}</p>
 									</div>
 								</div>
 							)}
 
-							{submitStatus === 'error' && (
+							{error && (
 								<div className='bg-red-50 border border-red-200 rounded-lg p-4 mb-6'>
 									<div className='flex items-center'>
 										<AlertCircle className='h-5 w-5 text-red-500 mr-2' />
-										<p className='text-red-700'>
-											Sorry, there was an error sending your message. Please try again or contact us
-											directly.
-										</p>
+										<p className='text-red-700'>{error}</p>
 									</div>
 								</div>
 							)}
 
 							<form
-								onSubmit={handleSubmit}
+								onSubmit={onSubmit}
 								className='space-y-6'>
 								<div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
 									<div>
@@ -242,9 +232,9 @@ export default function ContactForm() {
 
 								<button
 									type='submit'
-									disabled={isSubmitting}
+									disabled={isLoading}
 									className='w-full bg-primary text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-primary-light transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center'>
-									{isSubmitting ? (
+									{isLoading ? (
 										<>
 											<div className='animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2'></div>
 											Sending...
