@@ -5,12 +5,12 @@ import Image from 'next/image';
 import { Phone, Mail, Clock, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { useFormSubmission } from '@/hooks/useFormSubmission';
 
-export default function ContactForm() {
+export default function ContactForm({ defaultService }: { defaultService?: string }) {
 	const [formData, setFormData] = useState({
 		name: '',
 		email: '',
 		phone: '',
-		service: '',
+		service: defaultService || '',
 		message: '',
 	});
 
@@ -22,6 +22,7 @@ export default function ContactForm() {
 
 		const result = await handleSubmit({
 			formType: 'contact',
+			serviceId: formData.service || undefined,
 			fullName: formData.name,
 			email: formData.email,
 			phone: formData.phone || undefined,
