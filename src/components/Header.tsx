@@ -44,18 +44,17 @@ export default function Header() {
 			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 				<div className='flex justify-between items-center py-4'>
 					{/* Logo */}
-					<div className='relative h-11 w-40 flex-shrink-0'>
-						<Link
-							href='/'
-							className='flex items-center'>
-							<Image
-								src='/logo.png'
-								alt='Bilacert Logo'
-								fill
-								className='rounded-lg object-cover'
-							/>
-						</Link>
-					</div>
+					<Link
+						href='/'
+						className='relative h-11 w-40 flex-shrink-0 flex items-center'>
+						<Image
+							src='/logo.png'
+							alt='Bilacert Logo'
+							fill
+							sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
+							className='rounded-lg object-cover'
+						/>
+					</Link>
 
 					{/* Desktop Navigation */}
 					<nav className='hidden md:flex space-x-8'>
