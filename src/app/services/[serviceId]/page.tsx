@@ -9,6 +9,7 @@ import {
 	PricingPlans,
 	SuccessStory,
 	CTASection,
+	WhyChooseUs
 } from '@/components/service';
 
 interface Props {
@@ -73,10 +74,12 @@ export default async function ServiceDetailPage({ params }: Props) {
 				imageSrc={service.image || ''}
 				stats={[]}
 				formPath={service.href || ''}
-				phone={''}
+				phone={'075 430 4433'}
 			/>
 
-			{service.content && <WhatIsSection title="What is this service?" firstParagraph={service.content} secondParagraph="" checkpoints={[]} />}
+			{service.content && <WhatIsSection title={`What is this ${service.title}?`} firstParagraph={service.content} secondParagraph="" checkpoints={[]} />}
+			
+			  <WhyChooseUs />
 
 			{service.processSteps && <ProcessSteps title="Our Process" subtitle="A streamlined approach to get you certified." steps={service.processSteps} />}
 
@@ -84,9 +87,9 @@ export default async function ServiceDetailPage({ params }: Props) {
 
 			{service.successStory && <SuccessStory {...service.successStory} />}
 
-			<CTASection 
-				heading="Ready to get started?" 
-				description="Contact us today for a free consultation." 
+			<CTASection
+				heading="Ready to get started?"
+				description="Contact us today for a free consultation."
 				primaryCTA={{ label: 'Contact Us', href: '/contact' }}
 				secondaryCTA={{ label: 'Learn More', href: '/about' }}
 			/>

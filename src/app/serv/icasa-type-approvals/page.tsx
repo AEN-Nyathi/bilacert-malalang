@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Award, CheckCircle, Clock, Users, Shield, Zap } from 'lucide-react';
+import {WhyChooseUs} from '@/components/service/WhyChooseUs';
 
 export const metadata: Metadata = {
 	title: 'ICASA Type Approvals',
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
 		title: 'ICASA Type Approvals - Expert Certification Services',
 		description:
 			'Expert ICASA type approval services for South African businesses. We handle Standard, Simplified, Tested, and Untested approvals with fast processing and comprehensive support.',
-		url: 'https://bilacert.co.za/services/icasa-type-approvals',
+		url: 'https://bilacert.co.za/services/icasatype-approvals',
 		type: 'website',
 	},
 	alternates: {
@@ -78,29 +79,6 @@ export default function ICASATypeApprovalsPage() {
 			step: '5',
 			title: 'Approval',
 			description: 'We track progress and ensure timely approval of your certification.',
-		},
-	];
-
-	const benefits = [
-		{
-			icon: <Clock className='h-6 w-6' />,
-			title: '30% Faster Processing',
-			description: 'Our streamlined process reduces approval times compared to industry average.',
-		},
-		{
-			icon: <Shield className='h-6 w-6' />,
-			title: '100% Success Rate',
-			description: 'We maintain a perfect record on first-time applications.',
-		},
-		{
-			icon: <Users className='h-6 w-6' />,
-			title: 'Expert Guidance',
-			description: 'Our team has deep knowledge of ICASA requirements and processes.',
-		},
-		{
-			icon: <Zap className='h-6 w-6' />,
-			title: 'Ongoing Support',
-			description: 'We provide continued support for renewals and compliance updates.',
 		},
 	];
 
@@ -211,22 +189,7 @@ export default function ICASATypeApprovalsPage() {
 								</div>
 							</div>
 						</div>
-						<div className='bg-secondary-gray p-8 rounded-2xl'>
-							<h3 className='text-2xl font-bold text-primary mb-6'>Why Choose Our Service?</h3>
-							<div className='space-y-6'>
-								{benefits.map((benefit, index) => (
-									<div
-										key={index}
-										className='flex items-start space-x-4'>
-										<div className='bg-accent p-2 rounded-lg'>{benefit.icon}</div>
-										<div>
-											<h4 className='font-semibold text-primary mb-1'>{benefit.title}</h4>
-											<p className='text-gray-600 text-sm'>{benefit.description}</p>
-										</div>
-									</div>
-								))}
-							</div>
-						</div>
+						<WhyChooseUs />
 					</div>
 				</div>
 			</section>

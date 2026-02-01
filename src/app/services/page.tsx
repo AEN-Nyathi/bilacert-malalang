@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight, CheckCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle, Users, Clock } from 'lucide-react';
 import { getPublishedServices } from '@/lib/supabase/services';
 import Icon from '@/components/Icon';
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,27 @@ export const metadata: Metadata = {
 
 export default async function ServicesPage() {
 	const services = await getPublishedServices();
+
+	const whyChooseUs = [
+		{
+			title: 'Expert Guidance',
+			description:
+				'Deep industry knowledge and regulatory expertise to guide you through complex compliance requirements.',
+			icon: <Users className='h-6 w-6' />,
+		},
+		{
+			title: 'Efficient Process',
+			description:
+				'Streamlined applications and proactive problem-solving to minimize delays and maximize success rates.',
+			icon: <Clock className='h-6 w-6' />,
+		},
+		{
+			title: 'Client-Centric Approach',
+			description:
+				'Personalized support and clear communication throughout your compliance journey.',
+			icon: <CheckCircle className='h-6 w-6' />,
+		},
+	];
 
 	return (
 		<div className='min-h-screen'>
@@ -107,8 +128,36 @@ export default async function ServicesPage() {
 				</div>
 			</section>
 
-			{/* CTA Section */}
+			{/* Why Choose Us */}
 			<section className='py-20 bg-secondary-gray'>
+				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+					<div className='text-center mb-16'>
+						<h2 className='text-3xl lg:text-4xl font-bold text-primary mb-4'>
+							Why Choose Bilacert?
+						</h2>
+						<p className='text-xl text-gray-600 max-w-3xl mx-auto'>
+							We make compliance simple, efficient, and stress-free for businesses of all sizes
+						</p>
+					</div>
+
+					<div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+						{whyChooseUs.map((item, index) => (
+							<div
+								key={index}
+								className='text-center'>
+								<div className='bg-accent/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6'>
+									<div className='text-accent'>{item.icon}</div>
+								</div>
+								<h3 className='text-xl font-semibold text-primary mb-4'>{item.title}</h3>
+								<p className='text-gray-600'>{item.description}</p>
+							</div>
+						))}
+					</div>
+				</div>
+			</section>
+
+			{/* CTA Section */}
+			<section className='py-20'>
 				<div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center'>
 					<h2 className='text-3xl lg:text-4xl font-bold text-primary mb-6'>
 						Don't see what you need?

@@ -133,7 +133,7 @@ export default async function HomePage() {
 											<p className='text-gray-300'>Guaranteed approval</p>
 										</div>
 									</div>
-									<div className='flex items-center space-x-4'>
+									{/* <div className='flex items-center space-x-4'>
 										<div className='bg-accent p-3 rounded-lg'>
 											<Users className='h-6 w-6 text-white' />
 										</div>
@@ -141,7 +141,7 @@ export default async function HomePage() {
 											<h3 className='font-semibold'>500+ Clients</h3>
 											<p className='text-gray-300'>Successfully served</p>
 										</div>
-									</div>
+									</div> */}
 								</div>
 							</div>
 						</div>
