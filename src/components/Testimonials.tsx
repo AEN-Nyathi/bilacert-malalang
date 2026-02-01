@@ -1,27 +1,43 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import type { Testimonial } from '@/types';
 import { createClient } from '@/lib/supabase/client';
 
+declare global {
+    interface Window {
+        FB?: {
+            XFBML: {
+                parse: () => void;
+            };
+            init: (options: { xfbml: boolean; version: string }) => void;
+        };
+        fbAsyncInit?: () => void;
+    }
+}
+
 export default function Testimonials() {
-    const [testimonials, setTestimonials] = useState<{ id: string; post_url: string }[]>([]);
+    const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
     const supabase = createClient();
 
     useEffect(() => {
-        // FIX: Narrow the type to ensure supabase is not an Error
-        if (supabase instanceof Error) {
-            console.error("Supabase client initialization failed:", supabase.message);
-            return;
-        }
-
         const fetchTestimonials = async () => {
             const { data, error } = await supabase
                 .from('testimonials')
                 .select('*')
                 .order('created_at', { ascending: false });
 
-            if (!error && data) {
-                setTestimonials(data);
+            if (error) {
+                console.error('Error fetching testimonials:', error);
+                return;
+            }
+
+            if (data) {
+                setTestimonials(data.map(item => ({ 
+                    id: item.id, 
+                    postUrl: item.post_url, 
+                    createdAt: item.created_at 
+                })));
             }
         };
 
@@ -29,22 +45,24 @@ export default function Testimonials() {
     }, [supabase]);
 
     useEffect(() => {
-        // Initialize Facebook SDK
         if (testimonials.length > 0) {
-            if (window.FB) {
+            if (window.FB && window.FB.XFBML) {
                 window.FB.XFBML.parse();
             } else {
                 window.fbAsyncInit = function () {
-                    window.FB.init({
-                        xfbml: true,
-                        version: 'v18.0'
-                    });
+                    if(window.FB) {
+                        window.FB.init({
+                            xfbml: true,
+                            version: 'v18.0'
+                        });
+                        window.FB.XFBML.parse();
+                    }
                 };
                 (function (d, s, id) {
                     var js, fjs = d.getElementsByTagName(s)[0];
                     if (d.getElementById(id)) return;
                     js = d.createElement(s) as HTMLScriptElement; js.id = id;
-                    js.src = "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v18.0";
+                    js.src = "https://connect.facebook.net/en_US/sdk.js";
                     if (fjs && fjs.parentNode) {
                         fjs.parentNode.insertBefore(js, fjs);
                     } else {
@@ -55,9 +73,14 @@ export default function Testimonials() {
         }
     }, [testimonials]);
 
+    if (testimonials.length === 0) {
+        return null;
+    }
+
     return (
         <section className="py-20 bg-primary text-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div id="fb-root"></div>
                 <div className="text-center mb-16">
                     <h2 className="text-3xl lg:text-4xl font-bold mb-4">
                         Trusted by South African Businesses
@@ -72,26 +95,17 @@ export default function Testimonials() {
                         <div
                             key={t.id}
                             className="fb-post bg-white rounded-xl overflow-hidden"
-                            data-href={t.post_url}
+                            data-href={t.postUrl}
                             data-width="500"
                             data-show-text="true"
                         >
-                            <blockquote cite={t.post_url} className="fb-xfbml-parse-ignore">
-                                <a href={t.post_url}>Post</a>
+                            <blockquote cite={t.postUrl} className="fb-xfbml-parse-ignore">
+                                <a href={t.postUrl}>Post</a>
                             </blockquote>
                         </div>
                     ))}
                 </div>
-                <div id="fb-root"></div>
             </div>
         </section>
     );
-}
-
-// Add type definition for window.FB
-declare global {
-    interface Window {
-        FB: any;
-        fbAsyncInit: any;
-    }
 }

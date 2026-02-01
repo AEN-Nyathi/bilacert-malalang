@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { getServiceBySlug } from '@/lib/supabase/services';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -67,58 +68,66 @@ export async function POST(request: NextRequest) {
 	}
 }
 
-/**
- * Optional: GET endpoint to retrieve submission status (for authenticated admins only)
- * Usage: GET /api/form-submissions?submissionId=xxx
- */
+
 export async function GET(request: NextRequest) {
 	try {
-		const submissionId = request.nextUrl.searchParams.get('submissionId');
-
-		if (!submissionId) {
-			return NextResponse.json(
-				{ error: 'submissionId query parameter required' },
-				{ status: 400 }
-			);
-		}
+		const searchParams = request.nextUrl.searchParams;
+		const submissionId = searchParams.get('submissionId');
+		const serviceId = searchParams.get('serviceId');
 
 		const supabase = await createClient();
 
-		// Check user is authenticated and is an admin
-		const {
-			data: { user },
-		} = await supabase.auth.getUser();
+		// Branch 1: Fetching a service by its slug (serviceId)
+		if (serviceId) {
+			const service = await getServiceBySlug(serviceId);
 
-		if (!user) {
-			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+			if (!service) {
+				return NextResponse.json({ error: 'Service not found' }, { status: 404 });
+			}
+			return NextResponse.json(service);
 		}
 
-		// Fetch user profile to check role
-		const { data: userProfile } = await supabase
-			.from('users')
-			.select('role')
-			.eq('auth_id', user.id)
-			.single();
+		// Branch 2: Fetching a submission by its ID (for admins)
+		if (submissionId) {
+			// Check user is authenticated
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
+			if (!user) {
+				return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+			}
 
-		if (userProfile?.role !== 'admin') {
-			return NextResponse.json(
-				{ error: 'Forbidden: Only admins can view submissions' },
-				{ status: 403 }
-			);
+			// Fetch user profile to check role
+			const { data: userProfile } = await supabase
+				.from('users')
+				.select('role')
+				.eq('auth_id', user.id)
+				.single();
+
+			if (userProfile?.role !== 'admin') {
+				return NextResponse.json(
+					{ error: 'Forbidden: Only admins can view submissions' },
+					{ status: 403 }
+				);
+			}
+
+			// Retrieve submission
+			const { data, error } = await supabase
+				.from('form_submissions')
+				.select('*')
+				.eq('id', submissionId)
+				.single();
+
+			if (error) {
+				return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
+			}
+			return NextResponse.json(data);
 		}
 
-		// Retrieve submission
-		const { data, error } = await supabase
-			.from('form_submissions')
-			.select('*')
-			.eq('id', submissionId)
-			.single();
-
-		if (error) {
-			return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
-		}
-
-		return NextResponse.json(data);
+		return NextResponse.json(
+			{ error: 'submissionId or serviceId query parameter required' },
+			{ status: 400 }
+		);
 	} catch (error) {
 		console.error('Form retrieval error:', error);
 		return NextResponse.json(

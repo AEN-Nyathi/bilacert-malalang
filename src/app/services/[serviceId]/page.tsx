@@ -1,152 +1,94 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { getServiceConfig, getAllServiceIds } from '@/lib/services-config';
-import { ServiceHero } from '@/components/service/ServiceHero';
-import { WhatIsSection } from '@/components/service/WhatIsSection';
-import { ServicesGrid } from '@/components/service/ServicesGrid';
-import { PricingPlans } from '@/components/service/PricingPlans';
-import { ProcessSteps } from '@/components/service/ProcessSteps';
-import { SuccessStory } from '@/components/service/SuccessStory';
-import { CTASection } from '@/components/service/CTASection';
 
-interface ServicePageProps {
-	params: {
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { getServiceBySlug, getAllPublishedServiceSlugs } from '@/lib/supabase/services';
+import {
+	ServiceHero,
+	WhatIsSection,
+	ProcessSteps,
+	PricingPlans,
+	SuccessStory,
+	CTASection,
+} from '@/components/service';
+
+interface Props {
+	params: Promise<{
 		serviceId: string;
-	};
+	}>;
 }
 
-export async function generateMetadata({ params }: ServicePageProps): Promise<Metadata> {
-	const service = getServiceConfig(params.serviceId);
+export async function generateStaticParams() {
+	const slugs = await getAllPublishedServiceSlugs();
+	return slugs.map((item) => ({ serviceId: item.slug }));
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+	const { serviceId } = await params;
+	const service = await getServiceBySlug(serviceId);
 
 	if (!service) {
-		notFound();
+		return {
+			title: 'Service Not Found - Bilacert',
+		};
 	}
-
-	const safeService = service; // Type narrowing
 
 	return {
-		title: safeService.metadata.title,
-		description: safeService.metadata.description,
-		keywords: safeService.metadata.keywords,
+		title: service.seoTitle || `${service.title} - Bilacert`,
+		description: service.seoDescription || service.description,
+		keywords: service.seoKeywords || [
+			service.title.toLowerCase(),
+			...service.category.split(', ').map((c: string) => c.toLowerCase()),
+			'licensing',
+			'certification',
+			'ICASA',
+			'South Africa',
+		],
 		openGraph: {
-			title: `${safeService.metadata.title} - Licensing Services`,
-			description: safeService.metadata.description,
-			url: safeService.metadata.url,
+			title: service.seoTitle || service.title,
+			description: service.seoDescription || service.shortDescription,
+			url: `https://bilacert.co.za/services/${serviceId}`,
 			type: 'website',
+			images: service.image ? [{ url: service.image }] : [],
 		},
 		alternates: {
-			canonical: safeService.metadata.url,
+			canonical: `https://bilacert.co.za/services/${serviceId}`,
 		},
 	};
 }
 
-export function generateStaticParams() {
-	return getAllServiceIds().map((id) => ({
-		serviceId: id,
-	}));
-}
-
-export default function ServicePage({ params }: ServicePageProps) {
-	const service = getServiceConfig(params.serviceId);
+export default async function ServiceDetailPage({ params }: Props) {
+	const { serviceId } = await params;
+	const service = await getServiceBySlug(serviceId);
 
 	if (!service) {
 		notFound();
 	}
-
-	const safeService = service; // Type narrowing
-
-	// For services with additional offerings (like 4 service items)
-	const serviceOfferings = [
-		{
-			icon: 'CheckCircle',
-			title: safeService.servicePlans[0].title,
-			description: safeService.servicePlans[0].description,
-		},
-		{
-			icon: 'Shield',
-			title: safeService.servicePlans[1].title,
-			description: safeService.servicePlans[1].description,
-		},
-		{
-			icon: 'Users',
-			title: safeService.servicePlans[2].title,
-			description: safeService.servicePlans[2].description,
-		},
-		{
-			icon: 'Award',
-			title: 'Ongoing Support',
-			description: 'Comprehensive support throughout your entire journey with us',
-		},
-	];
 
 	return (
 		<div className='min-h-screen'>
-			{/* Hero Section */}
 			<ServiceHero
-				title={safeService.title}
-				subtitle={safeService.hero.subtitle}
-				iconName={safeService.hero.icon}
-				imageSrc={safeService.hero.image}
-				stats={safeService.heroStats}
-				formPath={safeService.formPath}
-				phone={safeService.phone}
+				title={service.title}
+				subtitle={service.shortDescription || ''}
+				iconName={service.icon || ''}
+				imageSrc={service.image || ''}
+				stats={[]}
+				formPath={service.href || ''}
+				phone={''}
 			/>
 
-			{/* What is X Section */}
-			<WhatIsSection
-				title={safeService.whatIsSection.title}
-				firstParagraph={safeService.whatIsSection.firstParagraph}
-				secondParagraph={safeService.whatIsSection.secondParagraph}
-				checkpoints={safeService.whatIsSection.checkpoints}
-				sideContent={safeService.whatIsSection.additionalContent === 'licenseTypes' ? 'licenseTypes' : undefined}
-				licenseTypes={safeService.licenseTypes}
-				benefits={safeService.benefitsBox}
-			/>
+			{service.content && <WhatIsSection title="What is this service?" firstParagraph={service.content} secondParagraph="" checkpoints={[]} />}
 
-			{/* Our Services Grid */}
-			<ServicesGrid
-				title={`Our ${safeService.title} Services`}
-				subtitle={`We offer a full-service approach to obtaining and maintaining your ${safeService.title.toLowerCase()}`}
-				items={serviceOfferings}
-				bgColor='bg-secondary-gray'
-			/>
+			{service.processSteps && <ProcessSteps title="Our Process" subtitle="A streamlined approach to get you certified." steps={service.processSteps} />}
 
-			{/* Pricing Plans */}
-			<PricingPlans
-				title='Pricing Plans'
-				subtitle='Flexible plans to suit businesses of all sizes'
-				plans={safeService.servicePlans}
-				formPath={safeService.formPath}
-			/>
+			{service.pricingPlans && <PricingPlans title="Pricing Plans" subtitle="Choose the best plan for your needs." plans={service.pricingPlans} formPath={service.href || ''} />}
 
-			{/* Our Process */}
-			<ProcessSteps
-				title='Our Process'
-				subtitle={`A proven ${safeService.processSteps.length}-step process for ${safeService.title.toLowerCase()} approval`}
-				steps={safeService.processSteps}
-				bgColor='bg-secondary-gray'
-			/>
+			{service.successStory && <SuccessStory {...service.successStory} />}
 
-			{/* Success Story */}
-			<SuccessStory
-				scenario={safeService.successStory.scenario}
-				challenge={safeService.successStory.challenge}
-				solution={safeService.successStory.solution}
-				result={safeService.successStory.result}
-			/>
-
-			{/* CTA Section */}
-			<CTASection
-				heading={safeService.ctaHeading}
-				description={`Ensure your business stays compliant with ${safeService.title.toLowerCase()} from Bilacert. Let us handle the licensing process so you can focus on delivering exceptional services.`}
-				primaryCTA={{
-					label: 'Get Free Consultation',
-					href: safeService.formPath,
-				}}
-				secondaryCTA={{
-					label: `Call ${safeService.phone}`,
-					href: `tel:${safeService.phone.replace(/\s+/g, '')}`,
-				}}
+			<CTASection 
+				heading="Ready to get started?" 
+				description="Contact us today for a free consultation." 
+				primaryCTA={{ label: 'Contact Us', href: '/contact' }}
+				secondaryCTA={{ label: 'Learn More', href: '/about' }}
 			/>
 		</div>
 	);

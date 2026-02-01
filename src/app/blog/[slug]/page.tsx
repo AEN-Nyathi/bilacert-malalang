@@ -1,46 +1,36 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Calendar, User, ArrowLeft, Share2, Clock } from 'lucide-react';
-import { createClient } from '@/lib/supabase/server';
+import { Calendar, User, ArrowLeft, Share2, Clock, Twitter, Linkedin, Facebook, Tag, Folder } from 'lucide-react';
+import { getBlogPostBySlug, getAllPublishedBlogSlugs, getBlogPostsByCategory, getAuthorByName } from '@/lib/supabase/blog';
+import { BlogPost } from '@/types';
+import { format } from 'date-fns';
+import Image from 'next/image';
+import { RelatedPosts, StickyShare, TableOfContents, AboutAuthor } from '@/components/blog';
 
-// 1. Force dynamic rendering so cookies() can be used safely
-export const dynamic = 'force-dynamic';
+export async function generateStaticParams() {
+  const slugs = await getAllPublishedBlogSlugs();
+  return slugs.map((item) => ({ slug: item.slug }));
 
-interface BlogPost {
-  id: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  author: string;
-  date: string | Date;
-  read_time: string;
-  category: string;
-  featured: boolean;
-  image: string;
-  created_at: Date;
 }
-
-export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+interface Props {
+	params: Promise<{
+		slug: string;
+	}>;
+}
+export default async function BlogPostPage({ params }: Props){
   const { slug } = await params;
-  
-  // 2. Initialize Supabase (createClient internaly handles cookies() now)
-  const supabase = await createClient();
+  const post = await getBlogPostBySlug(slug);
 
-  const { data: postData } = await supabase
-    .from('blog_posts')
-    .select('*')
-    .eq('id', slug)
-    .single();
-
-  if (!postData) {
+  if (!post) {
     notFound();
   }
 
-  const post = postData as BlogPost;
-  const dateObj = post.date ? new Date(post.date) : new Date();
+  const author = post.author_name;
+  const relatedPosts = post.category ? await getBlogPostsByCategory(post.category, 3) : [];
 
   return (
     <div className="min-h-screen">
+      <StickyShare />
       <div className="bg-white border-b">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Link
@@ -56,47 +46,74 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       <section className="py-12 bg-secondary-gray">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="inline-block bg-accent text-white px-4 py-2 rounded-full text-sm font-medium mb-4">
-              {post.category}
-            </div>
+            {post.category && (
+                <div className="inline-block bg-accent text-white px-4 py-2 rounded-full text-sm font-medium mb-4">
+                    {post.category}
+                </div>
+            )}
             <h1 className="text-4xl lg:text-5xl font-bold text-primary mb-6">
               {post.title}
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              {post.excerpt}
-            </p>
+            {post.excerpt && (
+                <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                    {post.excerpt}
+                </p>
+            )}
             <div className="flex items-center justify-center space-x-6 text-gray-600">
               <div className="flex items-center space-x-2">
                 <User className="h-5 w-5" />
-                <span>{post.author}</span>
+                <span>{post.author_name}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5" />
                 <span>
-                  {dateObj.toLocaleDateString('en-ZA', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
+                  {post.createdAt && format(new Date(post.createdAt), 'PP')}
                 </span>
               </div>
               <div className="flex items-center space-x-2">
                 <Clock className="h-5 w-5" />
-                <span>{post.read_time}</span>
+                <span>{post.readTime}</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      {post.image && (
+        <div className="relative h-64 md:h-96 max-w-5xl mx-auto my-8 rounded-lg overflow-hidden">
+            <Image src={post.image} alt={post.title} fill className="object-cover" />
+        </div>
+      )}
+
       <section className="py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-xl shadow-sm p-8 lg:p-12">
-            <div
-              className="prose prose-lg max-w-none"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
-          </div>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-row-reverse">
+            <div className="w-1/4 pl-8 sticky top-24 self-start">
+                <TableOfContents content={post.content || ''} />
+            </div>
+            <div className="w-3/4">
+                <div className="bg-white rounded-xl shadow-sm p-8 lg:p-12">
+                    <div
+                    className="prose prose-lg max-w-none"
+                    dangerouslySetInnerHTML={{ __html: post.content || '' }}
+                    />
+                </div>
+                 {author && <AboutAuthor author={author} />}
+
+                 <div className="bg-white rounded-xl shadow-sm p-8 lg:p-12 mt-8">
+                     <div className="flex items-center space-x-4">
+                         <div className="flex items-center space-x-2">
+                             <Folder className="h-5 w-5 text-gray-600" />
+                             <span className="text-gray-600">{post.category}</span>
+                         </div>
+                         <div className="flex items-center space-x-2">
+                            <Tag className="h-5 w-5 text-gray-600" />
+                            {/* {(post.tags || []).map((tag: string) => (
+                                <span key={tag} className="text-gray-600">{tag}</span>
+                            ))} */}
+                         </div>
+                     </div>
+                 </div>
+            </div>
         </div>
       </section>
 
@@ -106,10 +123,18 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <div className="bg-white rounded-xl shadow-sm p-8 text-center">
             <h3 className="text-2xl font-bold text-primary mb-4">Found this helpful?</h3>
             <div className="flex justify-center space-x-4 mb-8">
-              <button className="flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                <Share2 className="h-4 w-4" />
-                <span>Share</span>
-              </button>
+				<button className="flex items-center space-x-2 bg-blue-400 text-white px-4 py-2 rounded-lg hover:bg-blue-500">
+					<Twitter className="h-5 w-5" />
+					<span>Twitter</span>
+				</button>
+				<button className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+					<Linkedin className="h-5 w-5" />
+					<span>LinkedIn</span>
+				</button>
+				<button className="flex items-center space-x-2 bg-blue-800 text-white px-4 py-2 rounded-lg hover:bg-blue-900">
+					<Facebook className="h-5 w-5" />
+					<span>Facebook</span>
+				</button>
             </div>
             <div className="border-t pt-8">
               <Link href="/contact" className="bg-primary text-white px-6 py-3 rounded-lg font-semibold inline-block">
@@ -119,8 +144,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </div>
         </div>
       </section>
+
+      {relatedPosts.length > 0 && <RelatedPosts posts={relatedPosts} />}
     </div>
   );
 }
-
-// 3. REMOVED generateStaticParams because it conflicts with cookies()

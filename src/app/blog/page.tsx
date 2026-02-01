@@ -1,22 +1,12 @@
+
+
+
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Calendar, ArrowRight, User } from 'lucide-react';
 import Image from 'next/image';
-import { createClient } from '@/lib/supabase/server';
-
-// 1. Define the interface for your post data
-interface BlogPost {
-	id: string;
-	title: string;
-	excerpt: string;
-	content: string;
-	author: string;
-	date: string; // DATE from Postgres usually comes as a string (YYYY-MM-DD)
-	read_time: string;
-	category: string;
-	featured: boolean;
-	image: string;
-}
+import { getAllPublishedBlogPosts } from '@/lib/supabase/blog';
+import { BlogPost } from '@/types';
 
 export const metadata: Metadata = {
 	title: 'Blog',
@@ -54,21 +44,7 @@ export default async function BlogPage() {
 		'Marine Compliance',
 	];
 
-	const supabase = await createClient();
-	
-	// FIX: Type Guard to ensure supabase isn't an Error object
-	if (supabase instanceof Error) {
-		console.error("Supabase client error:", supabase.message);
-		return <div className="min-h-screen text-center py-20">Unable to load blog posts at this time.</div>;
-	}
-
-	// Now TypeScript knows supabase is valid and has the .from method
-	const { data: blogPostsData } = await supabase
-		.from('blog_posts')
-		.select('*')
-		.order('date', { ascending: false });
-
-	const blogPosts = (blogPostsData as BlogPost[]) || [];
+	const blogPosts = await getAllPublishedBlogPosts();
 
 	if (blogPosts.length === 0) {
 		return <div className="min-h-screen text-center py-20">No blog posts found.</div>;
@@ -114,22 +90,22 @@ export default async function BlogPage() {
 									<div className='flex items-center space-x-4 text-gray-200 mb-6'>
 										<div className='flex items-center space-x-2'>
 											<User className='h-4 w-4' />
-											<span>{blogPosts[0].author}</span>
+											<span>{blogPosts[0].author_name}</span>
 										</div>
 										<div className='flex items-center space-x-2'>
 											<Calendar className='h-4 w-4' />
 											<span>
-												{new Date(blogPosts[0].date).toLocaleDateString('en-ZA', {
+												{new Date(blogPosts[0].createdAt).toLocaleDateString('en-ZA', {
 													year: 'numeric',
 													month: 'long',
 													day: 'numeric',
 												})}
 											</span>
 										</div>
-										<span>{blogPosts[0].read_time}</span>
+										<span>{blogPosts[0].readTime}</span>
 									</div>
 									<Link
-										href={`/blog/${blogPosts[0].id}`}
+										href={`/blog/${blogPosts[0].slug}`}
 										className='inline-flex items-center bg-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-accent-light transition-colors duration-200'>
 										Read Article
 										<ArrowRight className='h-4 w-4 ml-2' />
@@ -139,7 +115,7 @@ export default async function BlogPage() {
 							<div className='p-8 lg:p-12 flex items-center'>
 								<div className='relative w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center'>
 									<Image
-										src={blogPosts[0].image}
+										src={blogPosts[0].image!}
 										alt={blogPosts[0].title}
 										fill
 										className='rounded-lg object-cover'
@@ -178,11 +154,11 @@ export default async function BlogPage() {
 						{blogPosts.slice(1).map((post: BlogPost) => (
 							<Link
 								key={post.id}
-								href={`/blog/${post.id}`}
+								href={`/blog/${post.slug}`}
 								className='bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 overflow-hidden'>
 								<div className=' relative h-48 bg-gray-200 flex items-center justify-center overflow-hidden'>
 									<Image
-										src={post.image}
+										src={post.image!}
 										alt={post.title}
 										fill
 										style={{ objectFit: 'cover' }}
@@ -194,7 +170,7 @@ export default async function BlogPage() {
 										<span className='bg-accent/10 text-accent px-3 py-1 rounded-full text-sm font-medium'>
 											{post.category}
 										</span>
-										<span className='text-sm text-gray-500'>{post.read_time}</span>
+										<span className='text-sm text-gray-500'>{post.readTime}</span>
 									</div>
 									<h3 className='text-xl font-semibold text-primary mb-3 line-clamp-2'>
 										{post.title}
@@ -203,12 +179,12 @@ export default async function BlogPage() {
 									<div className='flex items-center justify-between text-sm text-gray-500'>
 										<div className='flex items-center space-x-2'>
 											<User className='h-4 w-4' />
-											<span>{post.author}</span>
+											<span>{post.author_name}</span>
 										</div>
 										<div className='flex items-center space-x-2'>
 											<Calendar className='h-4 w-4' />
 											<span>
-												{new Date(post.date).toLocaleDateString('en-ZA', {
+												{new Date(post.createdAt).toLocaleDateString('en-ZA', {
 													month: 'short',
 													day: 'numeric',
 												})}

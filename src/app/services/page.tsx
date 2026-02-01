@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
+import { ArrowRight, CheckCircle } from 'lucide-react';
+import { getPublishedServices } from '@/lib/supabase/services';
+import Icon from '@/components/Icon';
+import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 export const metadata: Metadata = {
 	title: 'Our Services - Bilacert',
@@ -29,22 +32,22 @@ export const metadata: Metadata = {
 };
 
 export default async function ServicesPage() {
-	// Fetch services from Supabase
-	const supabase = createClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL!,
-		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-	);
-
-	const { data: services = [] } = await supabase
-		.from('services')
-		.select('*')
-		.order('created_at', { ascending: false });
+	const services = await getPublishedServices();
 
 	return (
 		<div className='min-h-screen'>
 			{/* Hero Section */}
-			<section className='py-20 bg-gradient-to-r from-primary to-primary-light text-white'>
-				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+			<section className='relative text-white py-20'>
+				<Image
+					src="https://picsum.photos/seed/services/1920/1080"
+                    data-ai-hint="compliance document"
+					alt='Bilacert Services'
+					fill
+					priority
+					className='object-cover'
+				/>
+				<div className='absolute inset-0 bg-black/40' />
+				<div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 					<div className='max-w-3xl'>
 						<h1 className='text-4xl lg:text-5xl font-bold mb-6'>Our Services</h1>
 						<p className='text-xl text-gray-200 mb-8'>
@@ -58,38 +61,48 @@ export default async function ServicesPage() {
 			{/* Services Grid */}
 			<section className='py-20'>
 				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-					<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
-						{(services || []).map((service: any) => {
-							return (
-								<Link
-									key={service.id}
-									href={service.href}
-									className='group'>
-									<div className='bg-white p-8 rounded-xl shadow-sm border border-gray-200 hover:border-accent hover:shadow-lg transition-all duration-300 h-full'>
-										<div className='bg-accent/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors text-2xl'>
-											{service.icon}
-										</div>
-
-										<h3 className='text-xl font-bold text-primary mb-2 group-hover:text-accent transition-colors'>
-											{service.title}
-										</h3>
-
-										<p className='text-gray-600 mb-6 text-sm'>{service.short_description}</p>
-
-										<div className='flex items-center text-accent font-semibold group-hover:translate-x-2 transition-transform'>
-											Learn More
-											<ArrowRight className='h-4 w-4 ml-2' />
-										</div>
-
-										<div className='mt-6 pt-6 border-t border-gray-200'>
-											<p className='text-sm text-gray-500'>
-												Processing time: <span className='font-semibold text-gray-700'>{service.processing_time}</span>
-											</p>
-										</div>
-									</div>
-								</Link>
-							);
-						})}
+					<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch'>
+						{services.map((service) => (
+							<Link key={service.id} href={service.href} className="group block h-full">
+                                <div className="flex h-full flex-col rounded-xl border bg-card p-6 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-xl">
+                                    <div className="mb-4 flex-shrink-0 text-accent">
+                                        <Icon name={service.icon || 'Shield'} className="h-8 w-8" />
+                                    </div>
+                                    <div className="flex flex-grow flex-col">
+                                        <h3 className="text-xl font-bold text-primary mb-2">
+                                            {service.title}
+                                        </h3>
+                                        <p className="mb-4 text-sm text-muted-foreground flex-grow">
+                                            {service.description}
+                                        </p>
+                                        {service.includes && service.includes.length > 0 && (
+                                            <div className="mb-4">
+                                                <h4 className="mb-2 text-sm font-semibold text-card-foreground">Includes:</h4>
+                                                <ul className="space-y-2 text-sm text-muted-foreground">
+                                                    {service.includes.slice(0, 4).map((item: string, index: number) => (
+                                                        <li key={index} className="flex items-center gap-2">
+                                                            <CheckCircle className="h-4 w-4 text-accent" />
+                                                            <span>{item}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="mt-auto pt-6">
+                                        {service.pricing && (
+                                            <p className="mb-4 text-lg font-semibold text-primary">
+                                                From R{service.pricing.toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                            </p>
+                                        )}
+                                        <Button className="w-full bg-primary hover:bg-primary/90">
+                                            Learn More
+                                            <ArrowRight className="ml-2 h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </Link>
+						))}
 					</div>
 				</div>
 			</section>
@@ -104,16 +117,12 @@ export default async function ServicesPage() {
 						Contact us today to discuss your specific licensing and certification needs.
 					</p>
 					<div className='flex flex-col sm:flex-row gap-4 justify-center'>
-						<Link
-							href='/contact'
-							className='bg-accent text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-accent-light transition-all duration-200 transform hover:-translate-y-1'>
-							Get in Touch
-						</Link>
-						<Link
-							href='tel:0754304433'
-							className='border-2 border-primary text-primary px-8 py-4 rounded-lg font-semibold text-lg hover:bg-primary hover:text-white transition-all duration-200'>
-							Call 075 430 4433
-						</Link>
+						<Button size="lg" asChild>
+							<Link href='/contact'>Get in Touch</Link>
+						</Button>
+						<Button size="lg" variant="outline" asChild>
+							<a href='tel:0754304433'>Call 075 430 4433</a>
+						</Button>
 					</div>
 				</div>
 			</section>

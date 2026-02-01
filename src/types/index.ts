@@ -1,3 +1,25 @@
+
+export interface PricingPlan {
+  title: string;
+  description: string;
+  features: string[];
+  price: string;
+  popular: boolean;
+}
+
+export interface ProcessStep {
+  step: string;
+  title: string;
+  description: string;
+}
+
+export interface SuccessStory {
+  scenario: string;
+  challenge: string;
+  solution: string;
+  result: string;
+}
+
 // Database Models
 export interface BaseSubmission {
   id?: string;
@@ -52,7 +74,7 @@ export interface ContactSubmission extends BaseSubmission {
   message: string;
 }
 
-export type Submission =
+export type SubmissionType = 
   | ClassEcsEcnsSubmission
   | IcasaSubmission
   | LicenseExemptionSubmission
@@ -61,53 +83,84 @@ export type Submission =
   | SkiBoatSubmission
   | ContactSubmission;
 
+export interface Submission {
+  id?: string;
+  formType: string;
+  status: 'pending' | 'in-progress' | 'completed' | 'rejected' | 'archived';
+  serviceId?: string;
+  serviceName?: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  industry?: string;
+  details?: any; // jsonb
+  internalNotes?: string;
+  assignedTo?: string;
+  createdAt: string; // timestamp
+  updatedAt: string; // timestamp
+  completedAt?: string; // timestamp
+}
+
 // Service Types
 export interface Service {
   id: string;
   title: string;
   description: string;
   shortDescription?: string;
-  icon: string;
+  slug: string;
+  icon?: string;
   href: string;
-  features: string[];
-  requirements?: string[];
-  pricing?: {
-    amount: number;
-    currency: string;
-  };
-  processingTime?: string;
-  category?: string;
+  category: string;
+  orderIndex?: number;
   content?: string;
+  features?: string[];
+  requirements?: string[];
+  includes?: string[];
+  published: boolean;
+  featured: boolean;
+  createdAt: string;
+  processingTime?: string;
+  pricing?: number;
   image?: string;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
+  thumbnail?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string;
+  pricingPlans?: PricingPlan[];
+  processSteps?: ProcessStep[];
+  successStory?: SuccessStory;
 }
 
 // Blog Types
 export interface BlogPost {
   id: string;
   title: string;
-  excerpt: string;
-  content: string;
-  author: string;
-  date: Date | string;
-  readTime: number;
-  category: string;
-  featured: boolean;
+  slug: string;
+  excerpt?: string;
+  content?: string;
+  category?: string;
+  published: boolean;
+  createdAt: string;
   image?: string;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
+  author_name?: string;
+  readTime?: string;
 }
 
 // Testimonial Types
 export interface Testimonial {
   id: string;
   postUrl: string;
-  content?: string;
-  author?: string;
+  createdAt: string;
+}
+
+export interface Contact {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
   company?: string;
-  rating?: number;
-  createdAt?: Date | string;
+  message?: string;
 }
 
 // User/Auth Types
@@ -138,12 +191,15 @@ export interface FormSubmissionResponse {
   timestamp: string;
 }
 
-// Admin Dashboard Types
-export interface DashboardStats {
-  totalSubmissions: number;
-  newSubmissions: number;
-  inProgressSubmissions: number;
-  completedSubmissions: number;
-  submissionsByType: Record<string, number>;
-  recentSubmissions: Submission[];
+// Hook Return Types
+export interface UseFormSubmissionState {
+  isLoading: boolean;
+  error: string | null;
+  isSuccess: boolean;
+}
+
+export interface UseRealtimeSubmissionsState {
+  submissions: Submission[];
+  loading: boolean;
+  error: string | null;
 }

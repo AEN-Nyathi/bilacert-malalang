@@ -5,14 +5,13 @@ import {
 	CheckCircle,
 	Clock,
 	Users,
-	Shield,
 	ArrowRight,
-	FileText,
-	Award,
-	Headphones,
 } from 'lucide-react';
 import StructuredData from '@/components/StructuredData';
 import Testimonials from '@/components/Testimonials';
+import { getFeaturedServices } from '@/lib/supabase/services';
+import { getAllPublishedBlogPosts } from '@/lib/supabase/blog';
+import { Icon } from '@/components/Icon';
 
 export const metadata: Metadata = {
 	title: 'Home',
@@ -40,7 +39,7 @@ export const metadata: Metadata = {
 	},
 };
 
-export default function HomePage() {
+export default async function HomePage() {
 	const organizationData = {
 		name: 'Bilacert (Pty) Ltd',
 		description:
@@ -48,33 +47,10 @@ export default function HomePage() {
 		serviceType: 'Compliance Consulting',
 		price: 'From R1,000',
 	};
-	const services = [
-		{
-			title: 'ICASA Type Approvals',
-			description:
-				'Streamlined approval process for telecommunications and radio frequency devices.',
-			icon: <Award className='h-8 w-8' />,
-			href: '/services/icasa-type-approvals',
-		},
-		{
-			title: 'NRCS LOA Applications',
-			description: 'Letter of Authority applications for electrical and electronic products.',
-			icon: <FileText className='h-8 w-8' />,
-			href: '/services/nrcs-loa-applications',
-		},
-		{
-			title: 'Radio Dealer Licensing',
-			description: 'Complete licensing support for radio communication equipment dealers.',
-			icon: <Headphones className='h-8 w-8' />,
-			href: '/services/radio-dealer-licensing',
-		},
-		{
-			title: 'Class ECS/ECNS Licensing',
-			description: 'Electronic Communications Service and Network Service licensing.',
-			icon: <Shield className='h-8 w-8' />,
-			href: '/services/class-ecs-ecns-licensing',
-		},
-	];
+	
+	const services = await getFeaturedServices();
+	const allBlogPosts = await getAllPublishedBlogPosts();
+    const blogPosts = allBlogPosts.slice(0, 3);
 
 	const whyChooseUs = [
 		{
@@ -94,28 +70,6 @@ export default function HomePage() {
 			description:
 				'Personalized support and clear communication throughout your compliance journey.',
 			icon: <CheckCircle className='h-6 w-6' />,
-		},
-	];
-
-	const blogPosts = [
-		{
-			title: 'Understanding ICASA Type Approval Requirements',
-			excerpt:
-				'A comprehensive guide to ICASA type approval requirements for South African businesses.',
-			date: '2024-01-15',
-			href: '/blog/icasa-type-approval-requirements',
-		},
-		{
-			title: 'NRCS LOA: What You Need to Know',
-			excerpt: 'Everything you need to know about NRCS Letter of Authority applications.',
-			date: '2024-01-10',
-			href: '/blog/nrcs-loa-guide',
-		},
-		{
-			title: 'Radio Dealer Licensing Made Simple',
-			excerpt: 'Step-by-step guide to obtaining your Radio Dealer License from ICASA.',
-			date: '2024-01-05',
-			href: '/blog/radio-dealer-licensing-guide',
 		},
 	];
 
@@ -172,7 +126,7 @@ export default function HomePage() {
 									</div>
 									<div className='flex items-center space-x-4'>
 										<div className='bg-accent p-3 rounded-lg'>
-											<Shield className='h-6 w-6 text-white' />
+											<Icon name={'Shield'} className='h-6 w-6 text-white' />
 										</div>
 										<div>
 											<h3 className='font-semibold'>100% Compliance</h3>
@@ -207,13 +161,13 @@ export default function HomePage() {
 					</div>
 
 					<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8'>
-						{services.map((service, index) => (
+						{services.map((service) => (
 							<Link
-								key={index}
+								key={service.id}
 								href={service.href}
 								className='bg-white p-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 group'>
 								<div className='text-accent mb-4 group-hover:scale-110 transition-transform duration-200'>
-									{service.icon}
+									<Icon name={service.icon || 'Shield'} className='h-8 w-8' />
 								</div>
 								<h3 className='text-xl font-semibold text-primary mb-3'>{service.title}</h3>
 								<p className='text-gray-600 mb-4'>{service.description}</p>
@@ -269,13 +223,13 @@ export default function HomePage() {
 					</div>
 
 					<div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-						{blogPosts.map((post, index) => (
+						{blogPosts.map((post) => (
 							<Link
-								key={index}
-								href={post.href}
+								key={post.id}
+								href={`/blog/${post.slug}`}
 								className='bg-white p-6 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2'>
 								<div className='text-sm text-gray-500 mb-2'>
-									{new Date(post.date).toLocaleDateString('en-ZA', {
+									{new Date(post.createdAt).toLocaleDateString('en-ZA', {
 										year: 'numeric',
 										month: 'long',
 										day: 'numeric',
