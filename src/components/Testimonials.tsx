@@ -33,11 +33,7 @@ export default function Testimonials() {
             }
 
             if (data) {
-                setTestimonials(data.map(item => ({ 
-                    id: item.id, 
-                    postUrl: item.post_url, 
-                    createdAt: item.created_at 
-                })));
+                setTestimonials(data);
             }
         };
 
@@ -95,12 +91,12 @@ export default function Testimonials() {
                         <div
                             key={t.id}
                             className="fb-post bg-white rounded-xl overflow-hidden"
-                            data-href={t.postUrl}
+                            data-href={t.post_url}
                             data-width="500"
                             data-show-text="true"
                         >
-                            <blockquote cite={t.postUrl} className="fb-xfbml-parse-ignore">
-                                <a href={t.postUrl}>Post</a>
+                            <blockquote cite={t.post_url} className="fb-xfbml-parse-ignore">
+                                <a href={t.post_url}>Post</a>
                             </blockquote>
                         </div>
                     ))}

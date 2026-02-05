@@ -95,14 +95,14 @@ export default async function BlogPage() {
 										<div className='flex items-center space-x-2'>
 											<Calendar className='h-4 w-4' />
 											<span>
-												{new Date(blogPosts[0].createdAt).toLocaleDateString('en-ZA', {
+												{new Date(blogPosts[0].created_at).toLocaleDateString('en-ZA', {
 													year: 'numeric',
 													month: 'long',
 													day: 'numeric',
 												})}
 											</span>
 										</div>
-										<span>{blogPosts[0].readTime}</span>
+										<span>{blogPosts[0].read_time}</span>
 									</div>
 									<Link
 										href={`/blog/${blogPosts[0].slug}`}
@@ -115,7 +115,7 @@ export default async function BlogPage() {
 							<div className='p-8 lg:p-12 flex items-center'>
 								<div className='relative w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center'>
 									<Image
-										src={blogPosts[0].image!}
+										src={blogPosts[0].featured_image!}
 										alt={blogPosts[0].title}
 										fill
 										className='rounded-lg object-cover'
@@ -158,7 +158,7 @@ export default async function BlogPage() {
 								className='bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-2 overflow-hidden'>
 								<div className=' relative h-48 bg-gray-200 flex items-center justify-center overflow-hidden'>
 									<Image
-										src={post.image!}
+										src={post.featured_image!}
 										alt={post.title}
 										fill
 										style={{ objectFit: 'cover' }}
@@ -170,7 +170,7 @@ export default async function BlogPage() {
 										<span className='bg-accent/10 text-accent px-3 py-1 rounded-full text-sm font-medium'>
 											{post.category}
 										</span>
-										<span className='text-sm text-gray-500'>{post.readTime}</span>
+										<span className='text-sm text-gray-500'>{post.read_time}</span>
 									</div>
 									<h3 className='text-xl font-semibold text-primary mb-3 line-clamp-2'>
 										{post.title}
@@ -184,7 +184,7 @@ export default async function BlogPage() {
 										<div className='flex items-center space-x-2'>
 											<Calendar className='h-4 w-4' />
 											<span>
-												{new Date(post.createdAt).toLocaleDateString('en-ZA', {
+												{new Date(post.created_at).toLocaleDateString('en-ZA', {
 													month: 'short',
 													day: 'numeric',
 												})}

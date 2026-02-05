@@ -1,9 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Calendar, User, ArrowLeft, Share2, Clock, Twitter, Linkedin, Facebook, Tag, Folder } from 'lucide-react';
-import { getBlogPostBySlug, getAllPublishedBlogSlugs, getBlogPostsByCategory, getAuthorByName } from '@/lib/supabase/blog';
-import { BlogPost } from '@/types';
-import { format } from 'date-fns';
+import { Calendar, User, ArrowLeft, Clock, Twitter, Linkedin, Facebook, Tag, Folder } from 'lucide-react';
+import { getBlogPostBySlug, getAllPublishedBlogSlugs, getBlogPostsByCategory, getAuthorByName } from '@/lib/supabase/blog';import { format } from 'date-fns';
 import Image from 'next/image';
 import { RelatedPosts, StickyShare, TableOfContents, AboutAuthor } from '@/components/blog';
 
@@ -67,21 +65,21 @@ export default async function BlogPostPage({ params }: Props){
               <div className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5" />
                 <span>
-                  {post.createdAt && format(new Date(post.createdAt), 'PP')}
+                  {post.created_at && format(new Date(post.created_at), 'PP')}
                 </span>
               </div>
               <div className="flex items-center space-x-2">
                 <Clock className="h-5 w-5" />
-                <span>{post.readTime}</span>
+                <span>{post.read_time}</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {post.image && (
+      {post.featured_image && (
         <div className="relative h-64 md:h-96 max-w-5xl mx-auto my-8 rounded-lg overflow-hidden">
-            <Image src={post.image} alt={post.title} fill className="object-cover" />
+            <Image src={post.featured_image} alt={post.title} fill className="object-cover" />
         </div>
       )}
 

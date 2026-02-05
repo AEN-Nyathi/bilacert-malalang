@@ -164,6 +164,7 @@ export interface Testimonial {
 export interface FormSubmissionPayload {
   formType: FormType | string;
   serviceId?: string;
+  service_name?: string;
   fullName: string;
   email: string;
   phone?: string;

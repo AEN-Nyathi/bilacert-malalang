@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { useFormSubmission, FormSubmissionPayload } from '@/hooks/useFormSubmission';
-import { Service } from '@/types'; // Assuming you have this type
+import { useFormSubmission } from '@/hooks/useFormSubmission';
+import { FormSubmissionPayload, Service } from '@/types'; // Assuming you have this type
 import { AlertCircle, CheckCircle, Send, Loader } from 'lucide-react';
 
 export default function ServiceApplicationForm() {
@@ -57,6 +57,7 @@ export default function ServiceApplicationForm() {
 		const payload: FormSubmissionPayload = {
 			formType: 'service-inquiry',
 			serviceId: service.id, // Use the fetched UUID
+			service_name: serviceSlug, // Use the service slug
 			fullName: formData.fullName,
 			email: formData.email,
 			phone: formData.phone,
@@ -200,7 +201,7 @@ export default function ServiceApplicationForm() {
 							id='industry'
 							name='industry'
 							value={formData.industry}
-							onChange={handleChange}
+								onChange={handleChange}
 							className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent'
 							placeholder='e.g., Technology, Manufacturing, etc.'
 						/>

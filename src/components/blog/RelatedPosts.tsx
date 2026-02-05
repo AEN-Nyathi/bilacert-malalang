@@ -15,8 +15,8 @@ export function RelatedPosts({ posts }: RelatedPostsProps) {
           {posts.map((post) => (
             <Link key={post.id} href={`/blog/${post.slug}`} className="block group">
               <div className="relative h-48 rounded-lg overflow-hidden mb-4">
-                {post.image && (
-                  <Image src={post.image} alt={post.title} layout="fill" className="object-cover" />
+                {post.featured_image && (
+                  <Image src={post.featured_image} alt={post.title} layout="fill" className="object-cover" />
                 )}
               </div>
               <h3 className="text-xl font-semibold text-primary group-hover:text-primary-light transition-colors duration-200 mb-2">

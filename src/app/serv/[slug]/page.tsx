@@ -10,6 +10,7 @@ import {
 	CTASection,
     WhyChooseUs,
 } from '@/components/service';
+import { ProcessStep, PricingPlan } from '@/types';
 
 interface Props {
 	params: Promise<{
@@ -33,19 +34,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	}
 
 	return {
-		title: service.seoTitle || `${service.title} - Bilacert`,
-		description: service.seoDescription || service.description,
-		keywords: service.seoKeywords || [
+		title: service.seo_title || `${service.title} - Bilacert`,
+		description: service.seo_description || service.description,
+		keywords: service.seo_keywords || [
 			service.title.toLowerCase(),
-			...service.category.split(', ').map((c: string) => c.toLowerCase()),
+			...(service.category ? service.category.split(', ').map((c: string) => c.toLowerCase()) : []),
 			'licensing',
 			'certification',
 			'ICASA',
 			'South Africa',
 		],
 		openGraph: {
-			title: service.seoTitle || service.title,
-			description: service.seoDescription || service.shortDescription,
+			title: service.seo_title || service.title,
+			description: service.seo_description || service.short_description,
 			url: `https://bilacert.co.za/services/${serviceId}`,
 			type: 'website',
 			images: service.image ? [{ url: service.image }] : [],
@@ -68,7 +69,7 @@ export default async function ServiceDetailPage({ params }: Props) {
 		<div className='min-h-screen'>
 			<ServiceHero
 				title={service.title}
-				subtitle={service.shortDescription || ''}
+				subtitle={service.short_description || ''}
 				iconName={service.icon || ''}
 				imageSrc={service.image || ''}
 				stats={[]}
@@ -78,13 +79,13 @@ export default async function ServiceDetailPage({ params }: Props) {
 
 			{service.content && <WhatIsSection title={`What is this ${service.title}?`} firstParagraph={service.content} secondParagraph="" checkpoints={[]} />}
 
-			{service.processSteps && <ProcessSteps title="Our Process" subtitle="A streamlined approach to get you certified." steps={service.processSteps} />}
+			{service.process_steps && <ProcessSteps title="Our Process" subtitle="A streamlined approach to get you certified." steps={(service.process_steps as unknown as ProcessStep[]).map(step => ({...step, step: step.step.toString()}))} />}
 
             <WhyChooseUs />
 
-			{service.pricingPlans && <PricingPlans title="Pricing Plans" subtitle="Choose the best plan for your needs." plans={service.pricingPlans} formPath={service.href || ''} />}
+			{service.pricing_plans && <PricingPlans title="Pricing Plans" subtitle="Choose the best plan for your needs." plans={(service.pricing_plans as unknown as PricingPlan[]).map(plan => ({...plan, title: plan.name, popular: false, description: plan.description || ''}))} formPath={service.href || ''} />}
 
-			{service.successStory && <SuccessStory {...service.successStory} />}
+			{service.success_story && <SuccessStory {...service.success_story as any} />}
 
 			<CTASection 
 				heading="Ready to get started?" 

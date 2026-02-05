@@ -1,16 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-
-export interface FormSubmissionPayload {
-	formType: string; // 'contact', 'service-form', etc.
-	serviceId?: string; // Optional: which service the form is for
-	fullName: string;
-	email: string;
-	phone?: string;
-	message?: string;
-	company?: string;
-	industry?: string;
-	details?: any;
-}
+import { FormSubmissionPayload } from '@/types';
 
 export interface FormSubmissionResponse {
 	success: boolean;
