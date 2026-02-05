@@ -1,4 +1,3 @@
-
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getServiceBySlug, getAllPublishedServiceSlugs } from '@/lib/supabase/services';
@@ -13,9 +12,7 @@ import {
 } from '@/components/service';
 
 interface Props {
-	params: Promise<{
-		serviceId: string;
-	}>;
+	params: Promise<{ serviceId: string }>;
 }
 
 export async function generateStaticParams() {
@@ -38,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 		description: service.seoDescription || service.description,
 		keywords: service.seoKeywords || [
 			service.title.toLowerCase(),
-			...service.category.split(', ').map((c: string) => c.toLowerCase()),
+			...(service.category?.split(', ').map((c: string) => c.toLowerCase()) || []),
 			'licensing',
 			'certification',
 			'ICASA',
@@ -65,6 +62,8 @@ export default async function ServiceDetailPage({ params }: Props) {
 		notFound();
 	}
 
+	const formPath = `/services/${serviceId}/form`;
+
 	return (
 		<div className='min-h-screen'>
 			<ServiceHero
@@ -73,17 +72,17 @@ export default async function ServiceDetailPage({ params }: Props) {
 				iconName={service.icon || ''}
 				imageSrc={service.image || ''}
 				stats={[]}
-				formPath={service.href || ''}
+				formPath={formPath}
 				phone={'075 430 4433'}
 			/>
 
 			{service.content && <WhatIsSection title={`What is this ${service.title}?`} firstParagraph={service.content} secondParagraph="" checkpoints={[]} />}
 			
-			  <WhyChooseUs />
+			<WhyChooseUs />
 
 			{service.processSteps && <ProcessSteps title="Our Process" subtitle="A streamlined approach to get you certified." steps={service.processSteps} />}
 
-			{service.pricingPlans && <PricingPlans title="Pricing Plans" subtitle="Choose the best plan for your needs." plans={service.pricingPlans} formPath={service.href || ''} />}
+			{service.pricingPlans && <PricingPlans title="Pricing Plans" subtitle="Choose the best plan for your needs." plans={service.pricingPlans} formPath={formPath} />}
 
 			{service.successStory && <SuccessStory {...service.successStory} />}
 

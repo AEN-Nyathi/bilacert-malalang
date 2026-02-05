@@ -7,6 +7,9 @@ export interface FormSubmissionPayload {
 	email: string;
 	phone?: string;
 	message?: string;
+	company?: string;
+	industry?: string;
+	details?: any;
 }
 
 export interface FormSubmissionResponse {
@@ -55,7 +58,8 @@ export function useFormSubmission() {
 			setSuccessMessage(null);
 
 			try {
-				const response = await fetch('/api/form-submissions', {
+        const endpoint = payload.formType === 'contact' ? '/api/contacts' : '/api/form-submissions';
+				const response = await fetch(endpoint, {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',

@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
 	try {
 		const body = await request.json();
-		const { formType, serviceId, fullName, email, phone, message } = body;
+		const { formType, serviceId, fullName, email, phone, company, industry, details } = body;
 
 		// Validate required fields
 		if (!formType || !fullName || !email) {
@@ -28,7 +28,9 @@ export async function POST(request: NextRequest) {
 					full_name: fullName,
 					email,
 					phone: phone || null,
-					message: message || null,
+					company: company || null,
+					industry: industry || null,
+					details: details || null,
 					status: 'pending',
 				},
 			])
@@ -44,12 +46,6 @@ export async function POST(request: NextRequest) {
 
 		// Log the submission for monitoring
 		console.log(`✓ Form submission received: ${formType} from ${email}`);
-
-		// TODO: Send email notification to admin
-		// await sendAdminNotificationEmail({ ...body, submissionId: data[0].id });
-
-		// TODO: Send confirmation email to user
-		// await sendUserConfirmationEmail(email, formType);
 
 		return NextResponse.json(
 			{
@@ -68,7 +64,6 @@ export async function POST(request: NextRequest) {
 	}
 }
 
-
 export async function GET(request: NextRequest) {
 	try {
 		const searchParams = request.nextUrl.searchParams;
@@ -77,7 +72,6 @@ export async function GET(request: NextRequest) {
 
 		const supabase = await createClient();
 
-		// Branch 1: Fetching a service by its slug (serviceId)
 		if (serviceId) {
 			const service = await getServiceBySlug(serviceId);
 
@@ -87,17 +81,12 @@ export async function GET(request: NextRequest) {
 			return NextResponse.json(service);
 		}
 
-		// Branch 2: Fetching a submission by its ID (for admins)
 		if (submissionId) {
-			// Check user is authenticated
-			const {
-				data: { user },
-			} = await supabase.auth.getUser();
+			const { data: { user } } = await supabase.auth.getUser();
 			if (!user) {
 				return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 			}
 
-			// Fetch user profile to check role
 			const { data: userProfile } = await supabase
 				.from('users')
 				.select('role')
@@ -111,7 +100,6 @@ export async function GET(request: NextRequest) {
 				);
 			}
 
-			// Retrieve submission
 			const { data, error } = await supabase
 				.from('form_submissions')
 				.select('*')
